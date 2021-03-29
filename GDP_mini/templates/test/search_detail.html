@@ -1,0 +1,106 @@
+{% extends 'test/base.html'%}
+
+{% load static %}
+{% block title %} 첫페이지{% endblock %}
+
+{% block content %}
+
+
+		<!-- Main -->
+		<div id="main">
+
+		<!-- login start -->
+		<div class='inner'>
+			{% if not request.user.is_authenticated %}
+			<!-- 방문자 상태 -->
+			<a href="/member/sign_up" class="btn btn-success mr-sm-1">회원가입 - SignUp</a>
+			<a href="/member/sign_in" class="btn btn-success mr-sm-2">로그인 - SignIn</a>
+			{% else %}
+			<!-- 로그인 상태 -->
+			<p> 반갑습니다. {{request.user.name}}님</p>
+			<hr />
+			아이디 정보 : {{request.user.username}} <br/>
+			이름 정보   : {{request.user.name}} <br/>
+			이메일 정보 : {{request.user.email}} <br/>
+			<hr />
+			
+			<p><a href="/member/user_mypage"> 마이페이지 </a>
+			<a href="/member/sign_out"> 로그아웃 </a></p>
+			
+			{% endif %}
+			<div class="inner">
+
+
+				<h1>Generic Page</h1>
+
+					<form method="post" action="#">	
+						<div class="row gtr-uniform">
+							<div class="col-6 col-12-xsmall">
+								<input type="text" name="demo-name" id="demo-name" value="" placeholder="Name">
+							</div>
+							<div class="col-6 col-12-xsmall">
+								<input type="email" name="demo-email" id="demo-email" value="" placeholder="Email">
+							</div>
+							<div class="col-12">
+								<select name="demo-category" id="demo-category">
+									<option value="">- Category -</option>
+									<option value="1">Manufacturing</option>
+									<option value="1">Shipping</option>
+									<option value="1">Administration</option>
+									<option value="1">Human Resources</option>
+								</select>
+							</div>
+						</div>
+					</form>
+
+				<form action ="/service/search_show" method ="post" ID="form1">
+				<!-- 1번  -->
+
+				<div class="col-12">
+				<h1>나라명과 년도 검색하세요. </h1>
+					<select name="category" name='country_name' id = 'country_name'>
+						<option value="">- Category -</option>
+						{% for one in list %}
+							<option value='{{one.CountryName}}'>{{one.CountryName}}</option>
+						{% endfor %}
+					</select>
+					<select name="category"  name='year' id = 'year1'>
+						<option value="">- Category -</option>
+						{% for one in year %}
+							<option value='{{one}}'>{{one}}</option>
+						{% endfor %}
+					</select>
+					<br><br>
+					<input type ="submit" value = "검색" class="button primary small" id = 'search1' />
+				</div>
+			</form>
+
+			<br> <br>
+			<form action ="/service/sort_by_year" method ="post" ID="form2">
+				<!-- 2번 -->
+				<h1>년도 / 1위부터 나라 수 </h1>
+					<select class='form-control'  name='year' id = 'year2'>
+						<option value='' selected>-- 선택 --</option> 
+						{% for tmp in year %}
+							<option value='{{tmp}}'>{{tmp}}</option>
+						{% endfor %}
+					</select>  
+					<select class='form-control'  name='how_many' id = 'how_many'>
+						<option value='' selected>-- 선택 --</option> 
+						{% for tmp1 in how_many %}
+							<option value='{{tmp1}}'>{{tmp1}}</option>
+						{% endfor %}
+					</select>
+					<input type ="submit" value = "Top Country 검색" id = 'search2'/> 
+			</form>
+			<br> <br>
+			<h1> 나라별 GDP 상승세 </h1>
+			<a href="/service/search_country" class="form-control" style="margin-bottom: 5px;" > search_country</a>  
+			<br> <br>	
+			</div>
+
+	
+		</div>
+
+    {% endblock %}
+

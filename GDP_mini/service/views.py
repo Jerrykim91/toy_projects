@@ -30,8 +30,6 @@ from base64 import b64encode
 cursor = connection.cursor()
 
 
-
-
 # Create your views here.
 
 def search_main(request) :
@@ -50,11 +48,8 @@ def search_main(request) :
         return render(request, 'main/search_main.html',{'list':data,'year':data1})
 
 # search_country_graph_pop -  나라의 1인당 GDP 구하기
-
+# plot_font - 그래프 폰트함수
 def plot_font():
-    """
-    plot_font - 그래프 폰트함수
-    """
     font_name = font_manager\
         .FontProperties(fname="c:/Windows/Fonts/malgun.ttf") \
         .get_name()
@@ -63,176 +58,208 @@ def plot_font():
 
 
 # @login_required
-@csrf_exempt 
+@csrf_exempt #  뷰어 
+# search_detail - 검색하는 창
 def search_detail(request) :
-    """
-    search_detail - 검색하는 창
-    """
     if request.method == 'GET' :
         # 경로 저장용 세션 
+
         data = list(GDPTable.object.all().values("CountryName"))
-        return render(request, 'service/search_detail.html', {'list':data , 'year':range(1960,2020,1), 'how_many':range(1,31,1)})
+        return render(request, 'test/search_detail.html', {'list':data , 'year':range(1960,2020,1), 'how_many':range(1,31,1)})
 
 
 #@login_required
-@csrf_exempt 
-def search_show(request) :
+@csrf_exempt
+# search_show - 검색 결과 출력 창 
+def search_show(request):
     """
-    search_show - 검색 결과 출력 창 
+    service/search_show 검색 후 그래프 출력 창
     """
-    if request.method == 'GET' :
-        # 경로 저장용 세션 
-        request.session['prev'] = request.get_full_path() 
-        print(request.session['prev'])
+    if request.method == 'GET':
+        # session에서 값 받기
+        country_name = request.session['country_name']
+        tmp_year = request.session['tmp_year']
+    
+        # 데이터 베이스에서 조건에 맞는 데이터 가져오기
+        year = 'gdp_' + str(tmp_year) # 이 때, 모델에 입력한 변수와 대소문자도 동일해야 한다
+        one_country = GDPTable.objects.filter(CountryName=country_name).values(year)[0][year]
+        avg = GDPTable.objects.aggregate(gdp_avg=Avg(year))
+        
+        # 그래프 변수 준비
+        plot_font()
+        y = [float(one_country), float(avg['gdp_avg'])]
+        x = [str(tmp_year) + '년' + country_name + '의 GDP' , str(tmp_year) + '년' + "평균 GDP" ]
+        
 
-        key =request.session['country']
-        if key  : 
-            # 데이터 가져오기 
-            country_name =  request.session['country'] 
-            tmp_year = request.session['year'] 
-            year     = "gdp_" + str(tmp_year)
-            sql = "SELECT " + year + " FROM SERVICE_GDPTABLE WHERE COUNTRYNAME = '"+country_name +"'"
-            cursor.execute(sql)
-            data = cursor.fetchone()
-            avg = GDPTable.object.aggregate(gdp_avg =Avg(year))
+        to_json = dict()
+        to_json[country_name+" GDP_in " +str(tmp_year)] = one_country
+        to_json["Average GDP_in " +str(tmp_year)] = float(avg['gdp_avg'])
+        country_name = country_name.replace(" ","_")
+        FILE_NAME = country_name+"_GDP_in_" +str(tmp_year)+".json"
+        FILE_PATH = "./static/json/"+FILE_NAME
+        html_file_path = "/static/json/"+FILE_NAME
+        with open(FILE_PATH, "w") as json_file:
+            json.dump(to_json, json_file)
             
-            # 그래프 그리기
-            plot_font()    
-            y= [float(data[0]),float(avg['gdp_avg'])]
-            x =[(str(tmp_year)+"년 "+country_name+"의 GDP") ,
-                str(tmp_year)+"년 "+ "평균 GDP" ]
-            print(x)
-            y= [float(data[0]),float(avg['gdp_avg'])]    
-            # print (x, y)
+        print("helloo")
+        try : 
+            sql1 = "SELECT * FROM SERVICE_NATIONDATATABLE WHERE COUNTRYNAME = '"+country_name +"'"
+            cursor.execute(sql1)
+            print("helloo")
+            data1 = cursor.fetchall()
+            print(type(data1))
+            img_data = []
+            for i in data1[0] : 
+                tmp =str(i).replace(" ","")
+                img_data.append(tmp)
+            print("**",img_data)
+            flag = img_data[-1]
+            loc =img_data[-2]
+            real_img_data = img_data[1:4]
 
-            
-            try : 
-                sql1 = "SELECT * FROM SERVICE_NATIONDATATABLE WHERE COUNTRYNAME = '"+country_name +"'"
-                cursor.execute(sql1)
-                data1 = cursor.fetchall()
-                print(type(data1))
-                img_data = []
-                for i in data1[0] : 
-                    tmp =str(i).replace(" ","")
-                    img_data.append(tmp)
-                print("**",img_data)
-                flag = img_data[-1]
-                loc =img_data[-2]
-                real_img_data = img_data[1:4]
-
-                if loc =='no_value' or flag =='no_value' : 
-                    print("tlqkf",loc)
-                    
-                    file1 = open('./static/files/no_image.jpg','rb')
-                    noimg = file1.read()
-                    img64 = b64encode(noimg).decode("utf-8")
-                    data4 = "data:;base64,{}".format(img64)
-                    if loc =='no_value' : 
-                        print("no loc")
-                        loc = data4
-                        
-                    if flag =='no_value' :
-                        print("no flag")
-                        flag = data4
-                        
-
-
-            except : 
-                real_img_data = ["no_data","no_data","no_data"]
-                file1 = open('./static/files/no_image.jpg','rb')
+            if loc =='no_value' or flag =='no_value' : 
+                print("tlqkf",loc)
+                
+                file1 = open('./static/img/no_image.jpg','rb')
                 noimg = file1.read()
                 img64 = b64encode(noimg).decode("utf-8")
                 data4 = "data:;base64,{}".format(img64)
-                loc = data4
-                flag = data4
+                if loc =='no_value' : 
+                    print("no loc")
+                    loc = data4
+                    
+                if flag =='no_value' :
+                    print("no flag")
+                    flag = data4
+                    
+        except : 
+            real_img_data = ["no_data","no_data","no_data"]
+            file1 = open('./static/img/no_image.jpg','rb')
+            noimg = file1.read()
+            img64 = b64encode(noimg).decode("utf-8")
+            data4 = "data:;base64,{}".format(img64)
+            loc = data4
+            flag = data4
 
-            dict1 = dict()
-            dict1[country_name+" GDP_in " +str(tmp_year)] = data[0]
-            dict1["Average GDP_in " +str(tmp_year)] = float(avg['gdp_avg'])
-            country_name = country_name.replace(" ","_")
-            FILE_NAME = country_name+"_GDP_in_" +str(tmp_year)+".json"
-            FILE_PATH = "./static/files/"+FILE_NAME
-            html_file_path = "/static/files/"+FILE_NAME
-            with open(FILE_PATH, "w") as json_file:
-                json.dump(dict1, json_file)
+        return render(request, 'test/search_show.html', {'xlist' : x, 'ylist' : y, 'country' : country_name, 'year' : tmp_year, 'file_name' : html_file_path, "img_data" : real_img_data, "flag" : flag, "loc" : loc})
+        
 
-            return render (request,'service/search_show.html',
-            {"xlist":x,"list":y,'country':country_name,"year":tmp_year,"file_name":html_file_path,"img_data":real_img_data,"flag":flag,"loc":loc})
-    
-        return render (request, 'service/search_show.html')
+    # search_detail.html에서 값을 POST로 먼저 받는다
+    elif request.method == 'POST':
+        tmp_year = request.POST['year']
+        country_name = request.POST['country_name']
 
-    elif request.method =='POST' :         
-        tmp_year = request.POST["year"]
-        country_name = request.POST["country_name"]
+        request.session['tmp_year'] = tmp_year
+        request.session['country_name'] = country_name
+        return redirect('/test/search_show')
 
-        request.session['country'] = country_name
-        request.session['year'] = tmp_year
-        return redirect('/service/search_show')
+
+
 
 
 # @login_required
 @csrf_exempt
-# sort_by_year  
-def sort_by_year(request) :
-    if request.method == 'GET' : 
-        request.session['prev'] = request.get_full_path() 
+def sort_by_year(request):
+    """
+    service/sort_by_year 
+    해당년도 GDP 상위 
+    몇개국 나라 검색 후 그래프 출력
+    """
+    if request.method == 'GET':
+
+        # session에서 값 받기
         tmp_year = request.session['year']
-        how = int(request.session['how_many'])
-        year     = "GDP_" + str(tmp_year)
+        how_many = int(request.session['how_many'])
 
-        # SQL문 - 1 
-        #SELECT COUNTRYNAME FROM SERVICE_GDPTABLE ORDER BY GDP_1985 DESC
-        sql = "SELECT COUNTRYNAME FROM SERVICE_GDPTABLE ORDER BY " +year + " DESC"      
-        cursor.execute(sql)
-        data = list(cursor.fetchall())
+        # 데이터 베이스에서 조건에 맞는 데이터 가져오기
+        year = 'gdp_' + str(tmp_year)
+        print(year)
+        # print(GDPTable.object.all().values('CountryName',year))
+        # data = GDPTable.object.all().order_by('-'+year).values('CountryName',year)[0:int(how_many)] # [ {} , {} , {} ]
+        data = GDPTable.object.all().order_by(year).values('CountryName',year)[0:int(how_many)] # [ {} , {} , {} ]
+        # print(data)
 
-        # SQL문 - 2 
-        sql1 = "SELECT "+year+" FROM SERVICE_GDPTABLE ORDER BY " +year + " DESC" 
-        cursor.execute(sql1)
-        data1 = list(cursor.fetchall())
-        print()
-        print('축 구현 시작')
+        # 그래프 변수 준비
+        x = list()
+        y = list()
+        for i in data:
+            # print(data)
+            x.append(i['CountryName'])
+            if i[year] == '':
+                i[year] = float(0)
+                y.append(float(i[year]))
+            else :  
+                y.append(float(i[year]))
 
-        # 축 구현 
-        x= []
-        y= []
-        for i in data[:how] : 
-            x.append(i[0])
-        for j in data1[:how]:
-            y.append(float(j[0]))
-
-        print('축 구현 끝')
-
-        df = pd.DataFrame(x,y)
-        print(x)
-        print("##",x,len(x),y,len(y))
+        df = pd.DataFrame(y,x )
+        print(df) 
         
-        # 제이슨 배포용 코드 
-        dict1 = dict() 
-        for idx, val  in  enumerate(y):
-            dict1[x[idx]] = val
 
-        FILE_NAME = year + "_TOP_"+str(how)+".json"
-        FILE_PATH = "./static/files/"+FILE_NAME
-        html_file_path = "/static/files/"+FILE_NAME
-        with open(FILE_PATH, "w") as json_file:
-            json.dump(dict1, json_file)
+        # 배포용 제이슨 데이터 가공
+        to_json = dict()
+        for idx, val in enumerate(data):
+            to_json['Rank'+str(idx+1)] = val # { {} , {} , {} }
+        
+        # 배포용 제이슨 파일 준비
+        FILE_NAME = year + '_TOP_' + str(how_many) + '.json'
+        FILE_PATH = './static/json/' + FILE_NAME
+        html_file_path = '/static/json/' + FILE_NAME
+        with open(FILE_PATH, 'w') as json_file:
+            json.dump(to_json, json_file)
 
-        return render (request,'service/sort_by_year.html',{"name":x,"value":y, "df_table" : df.to_html(),"file_name":html_file_path})
+        
+        try : 
+            sql1 = "SELECT * FROM SERVICE_NATIONDATATABLE WHERE COUNTRYNAME = '"+CountryName +"'"
+            cursor.execute(sql1)
+            data1 = cursor.fetchall()
+            print(type(data1))
+            img_data = []
+            for i in data1[0] : 
+                tmp =str(i).replace(" ","")
+                img_data.append(tmp)
+            print("**",img_data)
+            flag = img_data[-1]
+            loc =img_data[-2]
+            real_img_data = img_data[1:4]
 
+            if loc =='no_value' or flag =='no_value' : 
+                print("tlqkf",loc)
+                
+                file1 = open('./static/img/no_image.jpg','rb')
+                noimg = file1.read()
+                img64 = b64encode(noimg).decode("utf-8")
+                data4 = "data:;base64,{}".format(img64)
+                if loc =='no_value' : 
+                    print("no loc")
+                    loc = data4
+                    
+                if flag =='no_value' :
+                    print("no flag")
+                    flag = data4
+                    
+        except : 
+            real_img_data = ["no_data","no_data","no_data"]
+            file1 = open('./static/img/no_image.jpg','rb')
+            noimg = file1.read()
+            img64 = b64encode(noimg).decode("utf-8")
+            data4 = "data:;base64,{}".format(img64)
+            loc = data4
+            flag = data4
 
-    elif request.method =='POST' :       
-        tmp_year = request.POST["year"]
-        request.session['how_many'] = request.POST["how_many"]
+        return render(request, 'test/sort_by_year.html', {'xlist' : x, 'ylist' : y, "file_name" : html_file_path, 'how_many' : year + ' TOP_' + str(how_many), 'file_name' : html_file_path})
+    
+    # search_detail.html에서 값을 POST로 먼저 받는다
+    elif request.method == 'POST':
+        tmp_year = request.POST['year']
+        how_many = request.POST['how_many']
         request.session['year'] = tmp_year
+        request.session['how_many'] = how_many
         return redirect('/service/sort_by_year')
 
 
 # @login_required
+# search_country - 나라 검색 # 뷰어 
 def search_country(request): 
-    """
-    search_country - 나라 검색 # 뷰어 
-    """
     if request.method == 'GET':
         #request.session['prev'] = request.path     
 
@@ -245,11 +272,10 @@ def search_country(request):
 #real_path = PATH + str(con)
 
 
-# @login_required 
+# @login_required
+# search_country_graph - 나라 클릭하면 연도 그래프
 def search_country_graph(request):
-    """
-    search_country_graph - 나라 클릭하면 연도 그래프
-    """
+
     if request.method == "GET":
         ## HTML에서 값을 받아서 oracle의 CountryName과 같은 이름을 가진 값을 data에 담고 sql문을 돌려 data의 CountryName과 같은 이름을 가진 것을 SELECT *
         CountryName = request.GET["CountryName"] 
@@ -312,7 +338,7 @@ def search_country_graph(request):
             loc = data4
             flag = data4
 
-        # json만드는 파트 
+        #json만드는 파트 
         dict1=dict()
         for idx, val in enumerate(y_real):
             dict1[Country_gdp[idx]] =val
@@ -443,5 +469,3 @@ def search_country_graph_pop(request):
         return render(request,'service/search_country_graph_pop.html',{'one':data,'capita':capita,'kor_capita':kor_capita,
         "file_name":html_file_path,"img_data":real_img_data,"flag":flag,"loc":loc})
         
-
-

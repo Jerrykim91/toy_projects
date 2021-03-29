@@ -1,0 +1,21 @@
+{% comment %} {% load static %}
+<head>
+    <!-- title -->
+    <title>{% block title %} 첫페이지 {% endblock %}</title>
+
+    <!-- style -->
+    {% block extra-style %}
+    <!-- mata -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+    <!-- link -->
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="{% static 'test/assets/css/main.css' %}" />
+    <noscript><link rel="stylesheet" href="{% static 'test/assets/css/noscript.css' %}" /></noscript>
+    {% endblock %}
+</head>
+ {% endcomment %}
+
+

@@ -1,0 +1,36 @@
+{% extends 'test/base.html'%}
+
+{% load static %}
+{% block title %} 첫페이지{% endblock %}
+
+{% block content %}
+<div id="main">
+    <div class="inner">
+
+    <section style="align-items: center;">
+        <h2 class="major">Sign In</h2>
+        <form method="post" action="/member/sign_in">
+            <div class="fields">
+                <div class="field">
+                    <label for="text" class="sr-only">ID</label>
+                    <input type="text" name="username" id="demo-name" placeholder="ID" />
+                </div>
+                <div class="field">
+                    <label for="password" class="sr-only">PW</label>
+                    <input type="password" name="password" class="form-control" placeholder="PW" />
+                </div>
+                <div class="field">
+                    <ul class="actions">
+                        <li><input type="submit" value="Sign In" class="primary" /></li>
+                        <li><input type="reset" value="Reset" /></li>
+                        <li><a href="/member/sign_up" class="button primary">Sign Up</a></li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </section>
+
+</div>
+</div>
+
+    {% endblock %}

@@ -1,38 +1,43 @@
-{% include './head.html %}
+{% include './head.html' %}
 <body class="text-center">
 <div class="container-fluid">
-        {% include './navbar.html' %}
-    <h3>TOP {{one.CountryName}} </h3>
+             {% include '../main/navbar_service.html' %}
+        <h3>{{how_many}}</h3>
     <div id="chart"></div>      
 </div>
     <script> 
         $(function(){               
             // string을 그대로 받으면 에러가 나니까 replace로 문자를 제외한 나머지 것들을 공백처리
-            var str1 = '{{name}}'
+            var str1 = '{{xlist}}'
             str1 = str1.replace(/&#x27;/gi, "'");
             str1 = str1.replace(/&#39;/gi, "'");
             
-            var obj1 = eval(str1)  //python 문자를 script 배열로 변환
-            //console.log(obj1)
+            var xlist = eval(str1)  //python 문자를 script 배열로 변환
+            xlist.unshift('x_CountryName')
+            //xlist.unshift('x');
+            console.log(xlist)
 
-            obj1.unshift('x');
-            console.log(obj1)
+            var ylist =eval('{{ylist}}')
+            //obj.unshift('TOP10 GDP');
+            ylist.unshift('{{how_many}}');
 
-            var obj =eval('{{value}}')
-            obj.unshift('TOP10 GDP');
-
-            console.log(obj)
-
-                // 차트의 x축, y축의 값을 결정
+            console.log(ylist)
+            
+            // 그래프 구현
+            // 차트의 x축, y축의 값을 결정
             var chart = c3.generate({
                 bindto: '#chart',
                 data: {
-                    x: 'x',
-                    y: 'y',
+                    x: 'x_CountryName',
+                    y: '{{how_many}}',
                     columns: [
-                        obj1,  obj
+                        xlist,
+                        ylist
                     ],
-                    // type: 'bar'
+                   type: 'bar',
+                    colors: {
+                        '{{how_many}}': '#0000ff'
+                    }
                 },
 
                 // 현재 x축의 값을 결정
@@ -58,6 +63,10 @@
                         // min: -100,
                     }
                 },
+                size: {
+                    width: 1800,
+                    height: 700
+                }
                 // 그리드의 범위 지정
                 // regions: [  
                 //     {start:1979, end:1980, class:'foo'},

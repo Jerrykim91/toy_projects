@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<html lang="en">
+
+
+<!-- body  -->
+	<body class="is-preload">
+
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+
+				<!-- Header -->
+					<header id="header" class="alt">
+						<h1><a href="index.html">Solid State</a></h1>
+						<nav>
+							<a href="#menu">Menu</a>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<div class="inner">
+							<h2>Menu</h2>
+							<ul class="links">
+								<li><a href="/">Home</a></li>
+								{% if not request.user.is_authenticated %}
+								<li><a href="/member/sign_in">Log In</a></li>
+								<li><a href="/member/sign_up">Sign Up</a></li>
+								{% else %}
+								<li><a href="/member/user_mypage">My Page</a>
+								<li><a href="/member/sign_out"> Sign Out </a>
+								{% endif %}
+								<li><a href="/board/board_qna"> Q & A </a>
+								<li><a href="generic.html">Generic</a></li>
+								<li><a href="elements.html">Elements</a></li>
+
+							</ul>
+							<a href="#" class="close">Close</a>
+						</div>
+					</nav>
+
+				<!-- Banner -->
+					<section id="banner">
+						<div class="inner">
+							<div class="logo"><span class="icon fa-gem"></span></div>
+							<h2>This is GDP viewer</h2>
+							{% if not request.user.is_authenticated %}
+              				<p> 반갑습니다. 게스트님</p>
+							{% else %}
+							<p> 반갑습니다. {{request.user.name}}님</p>
+							{% endif %}
+						</div>
+					</section>
+
+        <!-- content -->
+        {% block content %}
+        {% endblock %}
+
+
+
+			</div>
+
+	</body>
+</html>

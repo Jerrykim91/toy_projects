@@ -10,17 +10,17 @@ from data.error import *
 User = get_user_model()
 
 # @csrf_exempt
-def main(request):
-    if request.method == 'GET':
-        request.session['prev'] = request.get_full_path() #
-        # return render(request, 'main/main.html')
-        return render(request, 'main/main.html')
+# def main(request):
+#     if request.method == 'GET':
+#         request.session['prev'] = request.get_full_path() #
+#         # return render(request, 'main/main.html')
+#         return render(request, 'main/main.html')
 
 
 @csrf_exempt
 def sign_up(request):
     if request.method == 'GET':
-        return render(request, 'member/sign_up.html' )
+        return render(request, 'test/sign_up.html' )
 
     elif request.method == 'POST':
         id = request.POST['username']
@@ -45,7 +45,7 @@ def sign_up(request):
 def sign_in(request):
     if request.method == 'GET':
         request.session['prev'] = request.get_full_path() 
-        return render(request, 'member/sign_in.html')
+        return render(request, 'test/sign_in.html')
  
     elif request.method == 'POST':
         id = request.POST['username']
@@ -65,7 +65,8 @@ def sign_in(request):
 def sign_out(request):
     if request.method == 'GET' or request.method =='POST':
         logout(request)
-        return redirect('/member/main')
+        # return redirect('/member/main')
+        return redirect('/')
 
 @login_required
 def user_mypage(request):

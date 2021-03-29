@@ -83,6 +83,7 @@ def search_show(request):
         html_file_path = "/static/json/"+FILE_NAME
         with open(FILE_PATH, "w") as json_file:
             json.dump(to_json, json_file)
+            
         print("helloo")
         try : 
             sql1 = "SELECT * FROM SERVICE_NATIONDATATABLE WHERE COUNTRYNAME = '"+country_name +"'"
@@ -123,17 +124,18 @@ def search_show(request):
             loc = data4
             flag = data4
 
-        return render(request, 'service/search_show.html', {'xlist' : x, 'ylist' : y, 'country' : country_name, 'year' : tmp_year, 'file_name' : html_file_path, "img_data" : real_img_data, "flag" : flag, "loc" : loc})
+        return render(request, 'test/search_show.html', {'xlist' : x, 'ylist' : y, 'country' : country_name, 'year' : tmp_year, 'file_name' : html_file_path, "img_data" : real_img_data, "flag" : flag, "loc" : loc})
         
 
     # search_detail.html에서 값을 POST로 먼저 받는다
     elif request.method == 'POST':
+        print(request.POST)
         tmp_year = request.POST['year']
         country_name = request.POST['country_name']
 
         request.session['tmp_year'] = tmp_year
         request.session['country_name'] = country_name
-        return redirect('/service/search_show')
+        return redirect('/test/search_show')
 
 
 

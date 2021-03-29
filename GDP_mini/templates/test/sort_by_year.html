@@ -1,0 +1,17 @@
+
+{% comment %} {% extends 'test/base.html'%} {% endcomment %}
+{% include './head.html' %}
+
+{% load static %}
+{% block title %}첫페이지{% endblock %}
+
+{% block content %}
+
+    <section id="wrapper">
+    <div class="inner">
+    <h3>{{how_many}}</h3>
+        <div id="chart"></div>  
+    </div>
+	</section>
+
+{% endblock %}
