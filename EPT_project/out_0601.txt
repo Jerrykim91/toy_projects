@@ -1,0 +1,192 @@
+
+Page:1 
+ Exploiting large pretrained models for various NMT tasks have gained a lot of visibility recently.
+,In this work we studyhow BERT pretrained models could be exploited for supervised Neural Machine Translation.
+,We compare various ways to integrate pretrained BERT model with NMTmodel and study the impact of the monolingual data used for BERT training on theﬁnal translation quality.
+,We use WMT-14English-German, IWSLT15 English-Germanand IWSLT14 English-Russian datasets forthese experiments. In addition to standard tasktest set evaluation, we perform evaluation onout-of-domain test sets and noise injected testsets, in order to assess how BERT pretrainedrepresentations affect model robustness.
+,1IntroductionPretrained Language Models (LM) such as ELMOand BERT (Peters et al., 2018; Devlin et al.,2018) have turned out to signiﬁcantly improvethe quality of several Natural Language Processing (NLP) tasks by transferring the prior knowledge learned from data-rich monolingual corporato data-poor NLP tasks such as question answering, bio-medical information extraction and standard benchmarks (Wang et al., 2018; Lee et al.,2019). In addition, it was shown that these representations contain syntactic and semantic information in different layers of the network (Tenneyet al., 2019).
+,Therefore, using such pretrainedLMs for Neural Machine Translation (NMT) isappealing, and has been recently tried by severalpeople (Lample and Conneau, 2019; Edunov et al.,2019; Song et al., 2019).
+,Unfortunately,theresultsoftheabovementioned works are not directly comparable toeach other as they used different methods, datasetsand tasks.
+,Furthermore, pretrained LMs havemostly shown improvements in low-resource orunsupervised NMT settings, and has been littlestudied in standard supervised scenario with reasonable amount of data available.
+,Current state of the art NMT models rely onthe Transformer model (Vaswani et al., 2017), afeed-forward network relying on attention mechanism, which has surpassed prior state of the artarchitecture based on recurrent neural nets (Bahdanau et al., 2014; Sutskever et al., 2014). Beyondmachine translation, the transformer models havebeen reused to learn bi-directional language models on large text corpora. The BERT model (Devlin et al., 2018) consists in a transformer modelaiming at solving a masked language modellingtask, namely correctly predicting a masked wordfrom its context, and a next sentence predictiontask to decide whether two sentences are consecutive or not. In this work, we study how pretrainedBERT models can be exploited for transformerbased NMT, thus exploiting the fact that they relyon the same architecture.
+,The objective of this work is twofold. On onehand, we wish to perform systematic comparisonsof different BERT+NMT architectures for standard supervised NMT. In addition, we argue thatthe beneﬁts of using pretrained representations hasbeen overlooked in previous studies and shouldbe assessed beyond BLEU scores on in-domaindatasets. In fact, LMs trained on huge datasetshave the potentials of being more robust in generaland improve the performance for domain adaptation in MT.
+,In this study, we compare different ways to trainand reuse BERT for NMT. For instance, we showthat BERT can be trained only with a masked LMtask on the NMT source corpora and yield significant improvement over the baseline. In addition,the models robustness is analyzed thanks to synthetic noise.
+
+ ,
+Page:2 
+ The paper is organized as follows. In section2, we review relevant state of the art. Section 3enumerates different models we experiment with.
+,Finally section 4 and 5 present our results beforediscussing the main contributions of this work insection 6.
+,2Related WorksThe seminal work of (Bengio et al., 2003; Collobert and Weston, 2008) were one of the ﬁrst toshow that neural nets could learn word representations useful in a variety of NLP tasks, pavingthe way for the word embedding era thanks toword2vec (Mikolov et al., 2013) and its variants (Pennington et al., 2014; Levy and Goldberg,2014).
+,With the recent advances and boost in performance of neural nets, ELMO (Peters et al., 2018)employed a Bi-LSTM network for language modelling and proposed to combine the different network layers to obtain effective word representations.
+,Shortly after the publication of ELMO,the BERT model (Devlin et al., 2018) was shownto have outstanding performance in various NLPtasks. Furthermore, the BERT model was reﬁnedin (Baevski et al., 2019) where the transformerself-attention mechanism is replaced by two directional self-attention blocks: a left-to-right andright-to-left blocks are combined to predict themasked tokens.
+,With respect to NMT, backtranslation (Sennrichet al., 2016a) is up to now one of the most effectiveways to exploit large monolingual data. However,backtranslation has the drawback of being onlyapplicable for target language data augmentation,while pretrained LMs can be used both for sourceand target language (independently (Edunov et al.,2019) or jointly (Lample and Conneau, 2019;Song et al., 2019)).
+,Lample and Conneau (2019) initializes theentire encoder and decoder with a pretrainedMaskLM or Crosslingual MaskLM language models trained on multilingual corpora.
+,Such initialization proved to be beneﬁcial for unsupervised machine translation, but also for EnglishRomanian supervised MT, bringing additional improvements over standard backtranslation withMLM initialization.
+,Edunov et al. (2019) uses ELMO (Peters et al.,2018) language model to set the word embeddings layer in NMT model.
+,In addition, theELMO embedding are compared with the clozestyle BERT (Baevski et al., 2019) ones. The embedding network parameters are then either ﬁxed,or ﬁne-tuned. This work shows improvements onEnglish-German and English-Turkish translationtasks when using pretrained language model forsource word embedding initialization. However,the results are less clear when reusing embeddingon the target language side.
+,Futhermore,Song et al. (2019) goes onestep further and proposes Masked Sequence-toSequence pretraining method. Rather than masking a single token, it masks a sequence of tokenin the encoder and recovers them in the decoder.
+,This model has shown new state of the art for unsupervised machine translation.
+,Our work is an attempt to perform systematiccomparison on some of the aforementioned architectures that incorporate pretrained LM in NMTmodel, concentrating on BERT pretrained LM representations applied on supervised machine translation. However, we restrict ourselves to encoderpart only, and leave the decoder initialization forfuture work.
+,Regarding robustness, several recent studies(Karpukhin et al., 2019; Vaibhav et al., 2019) havetackled robustness issues with data augmentation.
+,In this work, we study whether the robustnessproblem can be addressed at the model level ratherthan at data level. Michel et al. (2019) address robustness problem with generative adversarial networks. This method, as well as data augmentationmethods are complementary to our work and webelieve that they address different issues of robustness.
+,3MethodsTypical NMT model adopts the encoder-decoderarchitecture where the encoder forms contextualized word embedding from a source sentence andthe decoder generates a target translation from leftto right.
+,Pretrained LM, namely BERT, can inject priorknowledge on the encoder part of NMT, providingrich contextualized word embedding learned fromlarge monolingual corpus. Moreover, pretrainedLMs can be trained once, and reused for differentlanguage pairs1.
+
+ ,
+Page:3 
+ In this study, we focus on reusing BERT models for the NMT encoder2. We will compare thefollowing models:• Baseline:.
+,A transformer-big model withshared decoder input-output embedding parameters.
+,• Embedding (Emb):The baseline modelwhere the embedding layer is replaced by theBERT parameters (thus having 6 + 6 encoderlayers). The model is then ﬁne tuned similar to the ELMO setting from (Edunov et al.,2019)• Fine-Tuning (FT): The baseline model withthe encoder initialized by the BERT parameters as in Lample and Conneau (2019)• Freeze: The baseline model with the encoder initialized by the BERT parameters andfrozen. This means that the whole encoderhas been trained in purely monolingual settings, and only parameters responsible for thetranslation belong to the attention and decoder models.
+,We exploit the fact that BERT uses the samearchitecture as NMT encoder which allows us toinitialize NMT encoder with BERT pretrained parameters. BERT pretraining has two advantagesover NMT training:• it solves a simpler (monolingual) task of‘source sentence encoding’, compared toNMT (bilingual task) which has to ‘encodesource sentence information’, and ‘translateinto a target language’.
+,• it has a possibility to exploit much largerdata, while NMT encoder is limited to sourceside of parallel corpus only.
+,Even though the role of NMT encoder may gobeyond source sentence encoding (nothing prevents the model from encoding ‘translation related’ information at the encoder level), better initialization of encoder with BERT pretrained LMallows for faster NMT learning. Comparing settings where we freeze BERT parameters againstﬁne-tuning BERT allows to shed some light onthe capacity of the encoder/decoder model to learn‘translation-related’ information.
+,2Similar approach can be applied on the target languagebut we leave it for future work.
+,Moreover, since the BERT models are trainedto predict missing tokens from their context, theirrepresentations may also be more robust to missing tokens or noisy inputs. We perform extensiverobustness study at section 4 verifying this hypothesis.
+,Finally,language models trained on hugedatasets have the potentials of being more robustin general and improve the performance for domain adaptation in MT. We therefore compareBERT models trained on different datasets, andperform evaluation on related test sets in order toassess the capacity of pretrained LMs on domainadaptation.
+,4WMT experiments4.1PreprocessingWe learn BPE (Sennrich et al., 2016b) model with32K split operations on the concatenation of Wikiand News corpus. This model is used both for Pretrained LM subwords splitting and NMT source(English) side subwords splitting. German side ofNMT has been processed with 32K BPE modellearnt on target part of parallel corpus only. Pleasenote, that this is different from standard settingsfor WMT En-De experiments, which usually usesjoint BPE learning and shared source-target embeddings. We do not adopt standard settings sinceit contradicts our original motivation for using pretrained LM: English LM is learnt once and reusedfor different language pairs.
+,4.2TrainingBERTFor pretraining BERT models, we usethree different monolingual corpora of differentsizes and different domains. Table 1 summarizesthe statistics of these three monolingual corpora.
+,• NMT-src: source part of our parallel corpusthat is used for NMT model training.
+,• Wiki: English wikipedia dump• News:concatenationof70Msamplesfrom ”News Discussion”, ”News Crawl”and ”Common Crawl” English monolingualdatasets distributed by WMT-2019 sharedtask3. This resulted in total 210M samples.
+
+ ,
+Page:4 
+ LinesTokensNMT-src4.5M104MWiki72M2086MNews210M3657MTable 1: Monolingual (English) training dataafter having being trained on the source corpora.
+,The Wiki corpora is bigger than the NMT-src butcould be classiﬁed as out-of-domain compared tonews dataset.
+,Finally, the news dataset is thebiggest one and consists mostly of in-domain data.
+,In all of our experiments, we only consider using the masked LM task for BERT as the next sentence prediction tasks put restrictions on possibledata to use. We closely follow the masked LMtask described in (Devlin et al., 2018) with few adjustments optimized for downstream NMT training. We use frequency based sampling (Lampleand Conneau, 2019) in choosing 15% of tokens tomask, instead of uniformly sampling. Instead ofMASK token we used UNK token hoping that thustrained model will learn certain representation forunknowns that could be exploited by NMT model.
+,Warm-up learning scheme described in (Vaswaniet al., 2017) results in faster convergence thanlinear decaying learning rate. The batch size of64000 tokens per batch is used, with maximum token length of 250, half the original value, as we input single sentence only. We do not use [CLS] token in the encoder side, as attention mechanism inNMT task can extract necessary information fromtoken-level representations. The BERT model isequivalent to the encoder side of Transformer Bigmodel. We train BERT model up to 200k iterationsuntil the accuracy for masked LM on developmentsaturates.
+,NMTFor NMT system training, we use WMT14 English-German dataset.
+,We use Transformer-Big as our baseline model.We share input embedding and output embedding parameters just before softmax on the decoder side.
+,Warm up learning scheme is usedwith warm-up steps of 4000. We use batch sizeof 32000 tokens per batch. Dropout of 0.3 is applied to residual connections, and no dropout isapplied in attention layers. We decode with beamsize 4 with length penalty described in Wu et al.
+,(2016). We conduct model selection with perplexity on development set. We average 5 checkpointsaround lowest perplexity.
+,LinesTok/line (en/de)news14300319.7/18.3news18299719.5/18.3iwslt15238516.4/15.4OpenSub50006.3/5.5KDE50008/7.7wiki500017.7/15.5Table 2: In/Out of Domain test sets.
+,news14 andnews18 are test sets from WMT-14 and WMT-18 newstranslation shared task. iwslt: test set from IWSLT15 MT Track4. Wiki is randomly 5K sampled fromparallel Wikipedia distributed by OPUS5, OpenSub,KDE and Wiki are randomly 5K sampled from parallel Wikipedia, Open Subtitles and KDE corpora distributed by OPUS64.3EvaluationWe believe that the impact of pretrained LM inNMT model can not be measured by BLEU performance on in-domain test set only. Thereforewe introduce additional evaluation that allows tomeasure the impact of LM pretraining on differentout-of-domain tests. We also propose an evaluation procedure to evaluate the robustness to various types of noise for our models.
+,DomainBesides standard WMT-14 news testset, models are evaluated on additional test setsgiven by Table 2.
+,We include two in-domain(news) test sets, as well as additional out-ofdomain test sets described in Table 2.
+,Noise robustness.For robustness evaluation, weintroduce different type of noise to the standardnews14 test set:Typos: Similar to Karpukhin et al. (2019), weadd synthetic noise to the test set by randomly (1)swapping characters (chswap), (2) randomly inserting or deleting characters (chrand), (3) uppercasing words (up). These test sets translations areevaluated against the golden news14 reference.
+,Unk: An unknown character is introduced at thebeginning (noted UNK.S) or at the end of the sentence (noted UNK.E) before a punctuation symbolif any (this unknown character could be thoughtas as an unknown emoji, a character in differentscript, a rare unicode character). This token is introduced both for source and target sentence, andthe evaluation is performed with the augmentedreference.
+,Intuitively, we expect the model to simply copyUNK token and proceed to the remaining tokens.
+
+ ,
+Page:5 
+ Interestingly, this simple test seems to producepoor translations, therefore puzzling the attentionand decoding process a lot. Table 3 gives an example of such translations for baseline model7.
+,Since the tasks are correlated, a better modelmight be better on noisy test sets as it behaves better in general. If we want to test that some modelsare indeed better, we need to disentangle this effect and show that the gain in performance is notjust a random effect. A proper way would be tocompute the BLEU correlation between the original test set and the noisy versions but it wouldrequire a larger set of models for an accurate correlation estimation.
+,∆(chrF) : We propose to look at the distribution of the difference of sentence charf betweenthe noisy test set and the original test set. Indeed,looking at BLEU delta may not provide enough information since it is corpus-level metric. Ideally,we would like to measure a number of sentencesor a margin for which we observe an ‘importantdecrease’ in translation quality. According to Maet al. (2018); Bojar et al. (2017), sentence levelchrF achieves good correlation with human judgements for En-De news translations.
+,More formally, let s be a sentence from the standard news14 test set, n a noise operation, m atranslation model and r the reference sentence8:∆(chrF)(m, n, s)=chrF(m(n(s)), r) −chrF(m(s), r)(1)In the analysis, we will report the distribution of∆(chrF) and its mean value as a summary. If amodel is good at dealing with noise, then the produced sentence will be similar to the one producedby the noise-free input sentence. Therefore, the∆(chrF) will be closer to zero.
+,4.4ResultsTable 4 presents the results of our experiments.
+,As expected, freezing the encoder with BERT parameters lead to a signiﬁcant decrease in translation quality. However, other BERT+NMT architectures mostly improve over the baseline both onin-domain and out-of-domain test sets. We conclude, that the information encoded by BERT isuseful but not sufﬁcient to perform the translation7Output for (UNK.S+src) input is not an error, the modeldoes produces an English sentence!8In the case of UNK transformation, the reference ischanged but we omit that to simplify the notation.
+,task. We believe, that the role of the NMT encoderis to encode both information speciﬁc to sourcesentence, but also information speciﬁc to the target sentence (which is missing in BERT training).
+,Next, we observe that even NMTSrc.FT (NMTencoder is initialized with BERT trained on sourcepart of parallel corpus) improves over the baseline.
+,Note that this model uses the same amount of dataas the baseline. BERT task is simpler compared tothe task of the NMT encoder, but it is still related,thus BERT pretraining allows for a better initialization point for NMT model.
+,When using more data for BERT training(Wiki.FT and News.FT), we gain even more improvements over the baseline.
+,Finally, we observe comparable results forNews.Emb and News.FT (the difference in BLEUdoesn’t exceed 0.3 points,being higher forNews.FT on in-domain tests, and News.Emb forout-of-domain tests). Although News.FT conﬁguration keeps the size of the model same as standard NMT system, News.Emb adds BERT parameters to NMT parameters which doubles the sizeof NMT encoder. Additional encoder layers introduced in News.Emb does not add signiﬁcant value.
+,4.5Robustness analysisTable 5 reports BLEU scores for the noisy test sets(described in section 4.3). As expected, we observe an important drop in BLEU scores due tothe introduced noise. We observe that most pretrained BERT models have better BLEU scorescompared to baseline for all type of noise (exceptNMTSrc.FT which suffers more from unknowntoken introduction in the end of the sentence compared to the Baseline). However, these results arenot enough to conclude, whether higher BLEUscores of BERT-augmented models are due to better robustness, or simply because these models areslightly better than the baseline in general.
+,This is why ﬁgure 1 reports the mean ∆(chrF)for several models.
+,∆(chrF) scores for UNKtests show that BERT models are not better thanexpected. However, for chswap, chrand, upper,the BERT models have a slightly lower ∆(chrF).
+
+ ,
+Page:6 
+ source sentence”In home cooking, there is much to be discovered - with a few minortweaks you can achieve good, if not sometimes better results,” said Proctor.
+,translation(src)”Beim Kochen zu Hause gibt es viel zu entdecken - mit ein paar kleinennderungen kann man gute, wenn nicht sogar manchmal bessereErgebnisse erzielen”, sagte Proktor.
+,translation(UNK.S + src)• ”In home cooking, there is much to be discovered - with a few minortweaks you can achieve good, if not sometimes better results”, sagte Proktor.
+,Table 3: Example of a poor translation when adding unknown token to source sentences (translation done with abaseline transformer model)news14news18iwslt15wikikdeOpenSubBaseline27.339.528.917.618.115.3NMTsrc.FT27.740.128.718.318.415.3Wiki.FT27.740.628.718.419.015.4News.FT27.940.229.118.817.915.7News.Emb27.739.929.318.918.216.0News.Freeze23.635.526.515.015.113.8Table 4: FT: initialize NMT encoder with BERT and ﬁnetune; Freeze: ﬁx NMT encoder parameters to BERTparameters; Emb: ﬁx encoder embeddding layer with BERT contextual word embeddings.
+,Figure 1: Mean ∆(chrF) for several noisy test set andmodels. For the UNK test, the BERT models are similar or worst than the basline. For the chrand, chswap,upper, the BERT models are slightly better.
+,NMT encoders but the full potential of maskedLM task is not fully exploited for NMT.
+,5IWSLT experimentsIn order to explore the potential of maskedLM encoder pretraining for NMT in lower resource settings, we train NMT models on EnglishGermanIWSLT20159andEnglish-RussianIWSLT 201410 MT track datasets.
+,These arepretty small datasets (compared to previous experiments) which contain around 200K parallel sentences each.
+,5.1Experimental settingsIn these experiments we (1) reuse pretrainedBERT models from previous experiments or (2)train IWSLT BERT model. IWSLT BERT modelis trained on the concatenation of all the data available at IWSLT 2014-2018 campaigns. After ﬁltering out all the duplicates it contains around 780Ksentences and 13.8M tokens.
+,We considered various settings for IWSLT baseline.
+,First, for source side of the dataset, wetook 10K BPE merge operations, where BPEmodel was trained (1) either on the source side ofNMT data only, or (2) on all monolingual EnglishIWSLT data. Target side BPE uses 10K mergeoperations trained on the target side of the NMTdataset in all the IWSLST experiments. In our ﬁrstset of experiments, BPE model learnt on sourcedata only lead to similar translation performanceas BPE model learnt on all IWSLT English data.
+
+ ,
+Page:7 
+ Modelsnews14+UNK.S+UNK.E+chswap+chrand+upBaseline27.324.824.424.224.723.5NMTsrc.FT27.724.922.924.425.224.5Wiki.FT27.725.824.924.424.924.4News.FT27.924.924.924.525.324.5News.Emb27.724.724.824.625.324.2Table 5: Robustness tests. BLEU scores for clean and ’noisiﬁed’ (with different noise type) news14 testset.
+,for the latter (referred as bpe10k).NMT model training on IWSLT datasets withTransformer Big architecture on IWSLT data hasdiverged both for en-de and en-ru dataset. Therefore we use Transformer Base (tbase) architectureas a baseline model for these experiments. IWSLTBERT model is also based on tbase architecturedescribed in Vaswani et al. (2017) and for the restfollows same training procedure as described inthe section 4.
+,In order to explore the potential of single pretrained model for all language pairs/datasets wetry to reuse Wiki and News pretrained BERT models from previous experiments for encoder initialization of NMT model. However, in the previousexperiments, our pretrained BERT models used32K BPE vocabulary and Transformer Big (tbig)architecture which means that we have to reuse thesame settings for the encoder trained on IWSLTdataset. It has been shown by Ding et al. (2019),these are not optimal settings for IWSLT training because it leads to too many parameters forthe amount of data available.
+,Therefore, in order to reduce the amount of the parameters of themodel, we also consider the case where we reduce the amount of the decoder layers from 6 to3 (tbig.dec3).
+,5.2ResultsTable 6 reports the results of different sets of theexperiments on IWSLT data.
+,First, we observethat BERT pretrained model improves over thebaseline, in any settings (BPE vocabulary, modelarchitecture, dataset used for pretraining).
+,Inparticular, it is interesting to mention that without pretraining, both tbig.bpe32k and tbig.bpe10kmodels diverge when trained on IWSLT. However, BERT pretraining gives a better initialization point, and allows to achieve very good performance both for en-de and en-ru. Thus, suchpretraining can be an interesting technique in lowresource scenarios.
+,en-deen-ruBaselinetbase.bpe10k25.99.6tbase.dec3.bpe10k26.416.3BERT+NMTIWSLT.FT.tbase.bpe10k27.417.6IWSLT.FT.tbase.dec3.bpe10k27.218.1Wiki.FT.tbig.bpe32k26.917.6Wiki.FT.tbig.dec3.bpe32k27.717.8News.FT.tbig.bpe32k27.117.9News.FT.tbig.dec3.bpe32k27.617.9Table 6: IWSLT dataset results. IWSLT.FT: encoderis initialised with BERT model trained on IWSLTdata; tbase/tbig: transformer base/big architecture forNMT model; dec3: decoder layers reduced for 6 to3; bpe10k/bpe32k : amount of BPE merge operationsused for source language, learnt on the same dataset asBERT model (IWSLT or Wiki+News).
+,We do not observe big difference betweenIWSLT pretrained model and News/Wiki pretrained model.
+,We therefore may assume thatNews/Wiki BERT model can be considered as”general” English pretrained encoder, and be usedas a good starting point in any new model translating from English (no matter target language ordomain).
+,6DiscussionBERT pretraining has been very successful inNLP. With respect to MT, it was shown to provide better performance in Lample and Conneau(2019); Edunov et al. (2019) and allows to integrate large source monolingual data in NMTmodel as opposed to target monolingual data usually used for backtranslation.
+,In this experimental study, we have shown that:• The next sentence prediction task in BERTis not necessary to improve performance - amasked LM task already is beneﬁcial.
+
+ ,
+Page:8 
+ corpora, therefore supporting the claim thatpretraining the encoder provide a better intialization for NMT encoders.
+,• Similar to Edunov et al. (2019), we observethat the impact of BERT pretraining is moreimportant as the size of the training data decreases (WMT vs IWSLT).
+,• Information encoded by BERT is not sufﬁcient to perform the translation: NMT encoder encodes both information speciﬁc tosource sentence, and to the target sentence aswell (cf the low performance of BERT frozenencoder).
+,• Pretraining the encoder enables us to trainbigger models. In IWSLT, the transformerbig models were diverging, but when the encoder is initialized with pretrained BERT thetraining became possible. For WMT14, training a 12 layer encoder from scratch was problematic, but News.Emb model (which contains 12 encoder layers) was trained and gaveone of the best performances on WMT14.
+,• Finetuning BERT pretrained encoder is moreconvenient : it leads to similar performancecompared to reusing BERT as embeddinglayers, with faster decoding speed.
+,• BERT pretrained models seem to be generally better on different noise and domain testsets. However, we didn’t manage to obtainclear evidence that these models are more robust.
+,This experimental study was limited to a particular dataset, language pair and model architecture. However, many other combinations are possible. First, similar type of study needs to be performed with BERT pretrained model for NMT decoder. Also, the model can be extended to otherscenarios with BERT models such as Baevski et al.
+,(2019). In addition, the comparison with ELMOembeddings is also interesting as in Edunov et al.
+,(2019). Using embedding mostly inﬂuenced byneighboring words seems to echo the recent results of convolutional self attention network (Yanget al., 2019). Using convolutional self attentionnetwork in BERT could bring additional beneﬁtfor the pretrained representations. Another direction could look at the impact of the number of layers in BERT for NMT.
+,Besides, one key question in this study wasabout the role of encoder in NMT as the roles ofencoders and decoders are not clearly understoodin current neural architectures. In the transformerarchitecture, the encoder probably computes someinterlingual representations. In fact, nothing constraints the model in reconstructing or predictinganything about the source sentences. If that is thecase, why would a monolingual encoder help forthe NMT task?One hypothesis is that encoders have a role ofself encoding the sentences but also a translationeffect by producing interlingual representations.
+,In this case, a monolingual encoder could be a better starting point and could be seen as a regularizer of the whole encoders. Another hypothesis isthat the regularization of transformers models isnot really effective and simply using BERT models achieve this effect.
+,7ConclusionIn this paper, we have compared different ways touse BERT language models for machine translation. In particular, we have argued that the beneﬁt of using pretrained representations should notonly be assessed in terms of BLEU score for thein-domain data but also in terms of generalizationto new domains and in terms of robustness.
+,Our experiments show that ﬁne-tuning the encoder leads to comparable results as reusing theencoder as an additional embedding layers. However, the former has an advantage of keepingthe same model size as in standard NMT settings, while the latter adds additional parametersto the NMT model which increases signiﬁcantlythe model size and might be critical in certain scenarios.
+,For MT practioners, using BERT has also several practical advantages beyond BLEU score.
+,BERT can be trained for one source language andfurther reused for several translation pairs, thusproviding a better initialization point for the models and allowing for better performance.
+,With respect to robustness tests, the conclusionare less clear. Even if pretrained BERT modelsobtained better performance on noisy test sets, itseems that they are not more robust than expectedand that the potential of masked LM tasks is notfully exploited for machine translation. An interesting future work will be to assess the robustnessof models from Song et al. (2019).
+
+ ,
+Page:9 
+ ReferencesAlexei Baevski, Sergey Edunov, Yinhan Liu, LukeZettlemoyer, and Michael Auli. 2019.
+,Clozedriven pretraining of self-attention networks. CoRR,abs/1903.07785.
+,Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. 2014.
+,Neural machine translation by jointlylearning to align and translate.
+,arXiv e-prints,abs/1409.0473.
+,Yoshua Bengio, R´ejean Ducharme, Pascal Vincent, andChristian Janvin. 2003. A neural probabilistic language model. J. Mach. Learn. Res., 3:1137–1155.
+,Ondˇrej Bojar, Yvette Graham, and Amir Kamran.2017.
+,Results of the wmt17 metrics shared task.In Proceedings of the Second Conference on Machine Translation, Volume 2: Shared Task Papers,pages 489–513, Copenhagen, Denmark. Associationfor Computational Linguistics.
+,Ronan Collobert and Jason Weston. 2008. A uniﬁedarchitecture for natural language processing: Deepneural networks with multitask learning.
+,In Proceedings of the 25th International Conference onMachine Learning, ICML 08, pages 160–167, NewYork, NY, USA. ACM.
+,Jacob Devlin, Ming-Wei Chang, Kenton Lee, andKristina Toutanova. 2018.
+,BERT: pre-training ofdeep bidirectional transformers for language understanding. CoRR, abs/1810.04805.
+,Shuoyang Ding, Adithya Renduchintala, and KevinDuh. 2019. A call for prudent choice of subwordmerge operations. CoRR, abs/1905.10453.
+,Sergey Edunov, Alexei Baevski, and Michael Auli.2019. Pre-trained language model representationsfor language generation. CoRR, abs/1903.09722.
+,Vladimir Karpukhin, Omer Levy, Jacob Eisenstein, andMarjan Ghazvininejad. 2019. Training on syntheticnoise improves robustness to natural noise in machine translation. CoRR, abs/1902.01509.
+,Guillaume Lample and Alexis Conneau. 2019. Crosslinguallanguagemodelpretraining.
+,CoRR,abs/1901.07291.
+,JinhyukLee,WonjinYoon,SungdongKim,Donghyeon Kim,Sunkyu Kim,Chan Ho So,and Jaewoo Kang. 2019.
+,Biobert: a pre-trainedbiomedicallanguagerepresentationmodelforbiomedical text mining. CoRR, abs/1901.08746.
+,Omer Levy and Yoav Goldberg. 2014. Neural wordembedding as implicit matrix factorization. In Proceedings of the 27th International Conference onNeural Information Processing Systems - Volume 2,NIPS’14, pages 2177–2185, Cambridge, MA, USA.
+,MIT Press.Qingsong Ma, Ondej Bojar, and Yvette Graham. 2018.
+,Results of the wmt18 metrics shared task: Both characters and embeddings achieve good performance.
+,In Proceedings of the Third Conference on MachineTranslation, Volume 2: Shared Task Papers, pages682–701, Belgium, Brussels. Association for Computational Linguistics.
+,PaulMichel,XianLi,GrahamNeubig,andJuan Miguel Pino. 2019.
+,On evaluation of adversarial perturbations for sequence-to-sequencemodels. CoRR, abs/1903.06620.
+,Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. Distributed representations of words and phrases and their compositionality. In Proceedings of the 26th International Conference on Neural Information Processing Systems Volume 2, NIPS’13, pages 3111–3119, USA. CurranAssociates Inc.
+,Jeffrey Pennington, Richard Socher, and ChristopherManning. 2014.
+,Glove: Global vectors for wordrepresentation.
+,In Proceedings of the 2014 Conference on Empirical Methods in Natural LanguageProcessing (EMNLP), pages 1532–1543, Doha,Qatar. Association for Computational Linguistics.
+,Matthew E. Peters, Mark Neumann, Mohit Iyyer, MattGardner, Christopher Clark, Kenton Lee, and LukeZettlemoyer. 2018. Deep contextualized word representations. CoRR, abs/1802.05365.
+,Rico Sennrich, Barry Haddow, and Alexandra Birch.2016a. Improving neural machine translation models with monolingual data.
+,In Proceedings of the54th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages86–96, Berlin, Germany. Association for Computational Linguistics.
+,Rico Sennrich, Barry Haddow, and Alexandra Birch.2016b.
+,Neural machine translation of rare wordswith subword units. In Proceedings of the 54th Annual Meeting of the Association for ComputationalLinguistics (Volume 1: Long Papers), pages 1715–1725, Berlin, Germany. Association for Computational Linguistics.
+,Kaitao Song, Xu Tan, Tao Qin, Jianfeng Lu, and TieYan Liu. 2019. Mass: Masked sequence to sequencepre-training for language generation.
+,Ilya Sutskever, Oriol Vinyals, and Quoc V. Le. 2014.Sequence to sequence learning with neural networks.
+,In Proceedings of the 27th InternationalConference on Neural Information Processing Systems - Volume 2, NIPS’14, pages 3104–3112, Cambridge, MA, USA. MIT Press.
+,Ian Tenney, Dipanjan Das, and Ellie Pavlick. 2019.Bert rediscovers the classical nlp pipeline.
+,Vaibhav, Sumeet Singh, Craig Stewart, and Graham Neubig. 2019.
+,Improving robustness of machine translation with synthetic noise.
+,CoRR,abs/1902.09508.
+
+ ,
+Page:10 
+ Ashish Vaswani, Noam Shazeer, Niki Parmar, JakobUszkoreit, Llion Jones, Aidan N Gomez, Ł ukaszKaiser, and Illia Polosukhin. 2017. Attention is allyou need. In I. Guyon, U. V. Luxburg, S. Bengio,H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems 30, pages 5998–6008. Curran Associates, Inc.
+,Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. 2018.
+,GLUE: A multi-task benchmark and analysis platform for natural language understanding.
+,In Proceedings of the 2018 EMNLP Workshop BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP, pages 353–355, Brussels, Belgium.
+,Association for Computational Linguistics.Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V.
+,Le,Mohammad Norouzi,Wolfgang Macherey,Maxim Krikun,Yuan Cao,Qin Gao,KlausMacherey, Jeff Klingner, Apurva Shah, MelvinJohnson, Xiaobing Liu, Lukasz Kaiser, StephanGouws,Yoshikiyo Kato,Taku Kudo,HidetoKazawa, Keith Stevens, George Kurian, NishantPatil, Wei Wang, Cliff Young, Jason Smith, JasonRiesa, Alex Rudnick, Oriol Vinyals, Greg Corrado,Macduff Hughes, and Jeffrey Dean. 2016. Google’sneural machine translation system: Bridging the gapbetween human and machine translation.
+,CoRR,abs/1609.08144.
+,Baosong Yang, Longyue Wang, Derek F. Wong,Lidia S. Chao, and Zhaopeng Tu. 2019.
+,Convolutionalself-attentionnetworks.
+,CoRR,abs/1904.03107.
+
+ 
