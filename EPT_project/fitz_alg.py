@@ -28,19 +28,36 @@ def Jump_txt():
     # 2. )뒤
     pass 
 
+
+def Table():
+    pass 
+
+def Figer():
+    pass 
+
+def handling_issue(stacking_box):
+    val = stacking_box
+    if val[0].isdigit() == True:
+        val.insert(1,' ')
+        val.insert(3, '\n')
+    return stacking_box
+
 def Remove_hyphens(val,stacking_box, state=0):
     # stacking_box에 다가 문장을 만들도록 담는다. 
     
     if val[-1] == '-':
         val = val[:-1]
+        # val = val[:-1] + ' '
         stacking_box.append(val) # '-' 제거하고 append
     else: # 하이픈이 없는 경우 
         if len(stacking_box) == 0:
+            val = val+' '
             stacking_box.append(val)
         else: # stacking_box 내부에 데이터가 있는 경우도 포함 
             stacking_box.append(val)
             # print( )
             if stacking_box[-1][-1] == '.': # 리스트에 데이터가 있고 마지막 데이터가 dot 인 경우 
+                handling_issue(stacking_box)
                 join_txt = "".join(stacking_box) # 합친다. 
                 txt = join_txt+'\n'# 추후 수정가능
                 # txt = join_txt+'/'# 추후 수정가능
@@ -120,7 +137,7 @@ if save == 1:
     import os
     path = os.getcwd()
     # print(path)
-    fout = open(os.path.join(path, 'out_0601.txt'), 'w+', encoding='utf-8')
+    fout = open(os.path.join(path, 'out_0602.txt'), 'w+', encoding='utf-8')
     fout.write(','.join(tmp))
     fout.close()
         
