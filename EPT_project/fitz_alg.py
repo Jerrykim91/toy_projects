@@ -1,17 +1,11 @@
 """
-22.06.03 - 텍스트 추출 
-
-## 할일 
-
+22.06.05 - 텍스트 추출 
 """
 print(__doc__)
 
 # import 
 import fitz
-from regex import E
-
-
-from DEV import deg_for_test
+from DEV import deg_for_test # 디버깅용
 # import requests
 # import time
 # import re
@@ -23,14 +17,13 @@ doc_t = doc
 
 Special_characters = ['•']
 Special_word = ['Table','Figure']
-# 오타 - ':.'
+Point_word = ['abstract','reference']
 typing_error_dict = {':.':':',}
-# 추후에 조건이 필요해 보임 - dict 아니 함수로 - 레퍼런스 , 제목 타이틀, 이런거 나눌때 사용
 
 #------- Funtions ----------
 
 dev = False #True #False
-
+name = 0
 
 # def model():
 #   # 1. Table
@@ -42,6 +35,18 @@ dev = False #True #False
 #         if err in val : 
 #             val = val.replace(err,chg) 
 #     return val
+
+def find_point_page(doc,Point_word):
+    send_point = dict()
+    for point in Point_word:
+        test = [(point, int(str(page).split(' ')[1])+1) for page in doc if len(page.search_for(point)) != 0 ]
+        
+        if point == 'reference':
+            send_point[point] = test[-1][1]
+        else: 
+            send_point[point] = test[0][1]
+    return send_point
+
 
 def handling_issue(stacking_box):
     val = stacking_box
@@ -113,26 +118,18 @@ def Remove_hyphens(val,stacking_box, state=0):
                     stacking_box.append(val)
                     
         return 'Dev-Remove_hyphens', state, stacking_box    
-  
-# def split_sction():
-#     뒤에서부터 페이지랑 레퍼런스 위치 찾고 
-#     if page == 1: 
-#         base = 'Abstract'
-#         where_base = [i for i,J in enumerate(txt) if base.lower() == J.lower()][0]  # Abstract 위치 파악 
-#         return where_base
-#     
-#     pass
+
 
 def Find_sentence(txt, page):
     stacking_box = list()
     save_box = list()
-    
-    if page == 1:
-        base = 'Abstract'
-        where_base = [i for i,J in enumerate(txt) if base.lower() == J.lower()][0]  # Abstract 위치 파악 
+    if page == abstract:
+        print(page)
+        name = 'Abstract'
+        Where_abstract = [i for i,J in enumerate(txt) if name.lower() == J.lower()][0]  # Abstract 위치 파악 
     
         for idx, val in enumerate(txt):        
-            if idx > where_base: # 해당 위치 아래는 진짜 글 
+            if idx > Where_abstract: # 해당 위치 아래는 진짜 글 
                 if len(val) != 0 :
                     j_txt, state, stacking_box = Remove_hyphens(val, stacking_box) # 하이픈 제거하는 알고리즘
                     if state == 1:
@@ -145,10 +142,37 @@ def Find_sentence(txt, page):
                             save_box.append(j_txt)
                             print('Why!!!!!'*50,'\n', j_txt)                        
         return [page, save_box]#(page, save_box[0])
+    elif page >= reference:
+        pass
+        # # 레퍼런스 페이지 내에 contents가 있을 수 있음 
+        # # - 그부분을 고려한 코드가 필요 
+        # name = 'reference'
+        # where_reference = [i for i,J in enumerate(txt) if name.lower() == J.lower()][0]  # Abstract 위치 파악 
+        # print(where_reference)
+        
+        # print('-'*25, page,'-'*3,'reference','-'*25)
+        # for idx, val in enumerate(txt): 
+        #     # if idx > where_reference: 분류 옵션을 ... 함수로? 
+                       
+        #     if len(val) != 0 :
+        #         j_txt, state, stacking_box = Remove_hyphens(val, stacking_box) # 하이픈 제거하는 알고리즘
+        #         if state == 1:
+        #             if Special_characters[0] in j_txt:
+        #                 j_txt = j_txt.replace(Special_characters[0], '\n'+j_txt[0])
+        #                 # print(j_txt)
+        #             if j_txt[0].isupper() == True:
+        #                 save_box.append(j_txt)
+        #             elif j_txt[0].isdigit() == True:
+        #                 j_txt = '\n' +j_txt 
+        #                 save_box.append(j_txt)
+        #             else:
+        #                 save_box.append(j_txt)
+        # if len(stacking_box):
+        #     join_txt= " ".join(stacking_box)+'\n'
+        #     save_box.append(join_txt)
+        # return [page, save_box] 
     else:
         for idx, val in enumerate(txt):        
-            # if  마지막 텍스트 이면 :
-            #   숫자가 있다면 - 범례
             if len(val) != 0 :
                 j_txt, state, stacking_box = Remove_hyphens(val, stacking_box) # 하이픈 제거하는 알고리즘
                 if state == 1:
@@ -189,41 +213,45 @@ def Find_sentence(txt, page):
 
 
 # 1차 
-join_box = list()
-page = 1 
+page  = 1 
 state = 0
+join_box = list()
+
+point_loction = find_point_page(doc,Point_word) #  앱슽랙트, 레퍼런스 위치 찾기 
+abstract  = point_loction['abstract']
+reference = point_loction['reference']
 
 for i in doc_t:
     if dev == False :
         txt = i.get_text().split('\n')
         txt_box = Find_sentence(txt, page) # 문장 찾는 알고리즘 
         join_box.append(txt_box)
-    
+
     if dev == True and page == 3: # DEV
         txt = i.get_text().split('\n')
         txt_box = Find_sentence(txt, page) # 문장 찾는 알고리즘 
         join_box.append(txt_box)
+        # print(join_box)
         tmp = [f"\nPage:{str(i[0])} \n {' '.join(i[1]).replace('@',' ').replace('~','')}\n " for i in join_box]
         print( )
         print(tmp)
-     # print(txt_box)
         break 
     
     page +=1
-    
+print(join_box)
 print('Txet Append Done-')
 
     
 # 본문 
-save = 1 
+save = 1
 if save == 1: # ','.join(i[1])
-    tmp = [f"\nPage:{str(i[0])} \n {' '.join(i[1]).replace('@',' ')}\n " for i in join_box]
+    tmp = [f"\nPage:{str(i[0])} \n {' '.join(i[1]).replace('@',' ')}\n " for i in join_box if i != None]
     # print(tmp)
     
     import os
     path = os.getcwd()
     # print(path)
-    fout = open(os.path.join(path, 'out_0604.txt'), 'w+', encoding='utf-8')
+    fout = open(os.path.join(path, 'out_0605.txt'), 'w+', encoding='utf-8')
     fout.write(','.join(tmp))
     fout.close()
         
