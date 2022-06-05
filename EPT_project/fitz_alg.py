@@ -238,7 +238,6 @@ for i in doc_t:
         break 
     
     page +=1
-print(join_box)
 print('Txet Append Done-')
 
     
