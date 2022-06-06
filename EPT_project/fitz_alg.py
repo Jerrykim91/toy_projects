@@ -1,5 +1,5 @@
 """
-22.06.05 - 텍스트 추출 
+22.06.06 - 텍스트 추출 
 """
 print(__doc__)
 
@@ -35,6 +35,8 @@ name = 0
 #         if err in val : 
 #             val = val.replace(err,chg) 
 #     return val
+
+
 
 def find_point_page(doc,Point_word):
     send_point = dict()
@@ -124,7 +126,6 @@ def Find_sentence(txt, page):
     stacking_box = list()
     save_box = list()
     if page == abstract:
-        print(page)
         name = 'Abstract'
         Where_abstract = [i for i,J in enumerate(txt) if name.lower() == J.lower()][0]  # Abstract 위치 파악 
     
@@ -232,7 +233,7 @@ for i in doc_t:
         txt_box = Find_sentence(txt, page) # 문장 찾는 알고리즘 
         join_box.append(txt_box)
         # print(join_box)
-        tmp = [f"\nPage:{str(i[0])} \n {' '.join(i[1]).replace('@',' ').replace('~','')}\n " for i in join_box]
+        tmp = [f"\n<Page {str(i[0])}> \n {' '.join(i[1]).replace('@',' ').replace('~','')}\n " for i in join_box]
         print( )
         print(tmp)
         break 
@@ -241,16 +242,37 @@ for i in doc_t:
 print('Txet Append Done-')
 
     
+    
+def test_t(writing):
+    # 텍스트를 전처리하는 부분에 들어가야 함 - 페이지당 하나만 나옴 
+    # print(writing.find(":"))
+    idx_num = writing.find(":")
+    # writing[:idx_num+1]
+    wtf = writing[idx_num-1]
+    
+    if wtf.isdigit() == True:
+        print('-들어감-',wtf.isdigit())
+        # 여기서부터 기능 추가 필요 
+        # Lines Tokens NMT-src 4.5M 104M Wiki 72M 2086M News 210M 3657M Table 1: Monolingual (English) 
+        # Table 1, Figure 기준으로 줄 바꿈 
+        # 테이블 앞에 텍스트는 표에서 나온 txt 임으로 처리가 필요 
+        # Figure 앞은 << 그림 >> 삽입 하기 
+        # 테이블 텍스트 뒤의 데이터는 어떻게 분리하면 좋을지 생각해봐야 할듯 
+    
+    return int(writing.find(":"))
 # 본문 
 save = 1
 if save == 1: # ','.join(i[1])
-    tmp = [f"\nPage:{str(i[0])} \n {' '.join(i[1]).replace('@',' ')}\n " for i in join_box if i != None]
-    # print(tmp)
+    writing = [f"\n<Page {str(i[0])}>\n {' '.join(i[1]).replace('@',' ')}\n " for i in join_box if i != None]
+    # print(len(writing)) # page
+    
+    print(test_t(writing[3])) # 테스트 위치 
     
     import os
     path = os.getcwd()
     # print(path)
-    fout = open(os.path.join(path, 'out_0605.txt'), 'w+', encoding='utf-8')
-    fout.write(','.join(tmp))
+    fout = open(os.path.join(path, 'out_0606.txt'), 'w+', encoding='utf-8')
+    fout.write(','.join(writing))
     fout.close()
+      
         
