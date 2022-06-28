@@ -11,7 +11,7 @@ from DEV import deg_for_test # 디버깅용
 # import re
  
 #------- values ----------
-inputFile = '1909.12744.pdf'
+inputFile = '1412.3555.pdf' #'1909.12744.pdf'
 doc = fitz.open(inputFile)
 doc_t = doc
 
